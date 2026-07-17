@@ -1,0 +1,9 @@
+{
+  "name": "zot-followup",
+  "version": "0.1.0",
+  "exec": "npx",
+  "args": ["--yes", "tsx", "index.ts"],
+  "language": "typescript",
+  "description": "Queue editable follow-ups while zot is working and run them afterward",
+  "enabled": true
+}
