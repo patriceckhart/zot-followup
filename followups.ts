@@ -5,7 +5,7 @@ export interface FollowUp {
 
 export function renderEditorLine(text: string): string {
   const safeText = text.replace(/[\u0000-\u001f\u007f]/g, "");
-  return `  \x1b[97m${safeText}▌\x1b[0m`;
+  return `  \x1b[97m${safeText}\x1b[5m█\x1b[25m\x1b[0m`;
 }
 
 export class FollowUpQueue {

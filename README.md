@@ -39,13 +39,16 @@ In the panel:
 - Left and Right reorder the selected item.
 - Enter submits the selected item when the agent is idle.
 - Esc closes or cancels.
+- Your terminal's paste shortcut inserts clipboard text while adding or editing.
+
+Clipboard paste uses `pbpaste` on macOS, PowerShell on Windows, and `wl-paste`, `xclip`, or `xsel` on Linux. Current zot releases report panel paste gestures as an `unknown` key without including the pasted text, so the extension reads the system clipboard when it receives that key while its input is active.
 
 After a successful turn ends, the first pending follow-up is removed from the queue and submitted as a new user prompt. Tool-use boundaries do not drain the queue. If a turn is canceled or fails, pending work stays queued so it does not run unexpectedly. While a follow-up runs, the rest of the queue remains editable. Follow-ups are intentionally kept only for the current zot session and are lost when zot exits.
 
 ## Test
 
 ```sh
-npx --yes tsx --test followups.test.ts
+npx --yes tsx --test clipboard.test.ts followups.test.ts
 ```
 
 ## Development

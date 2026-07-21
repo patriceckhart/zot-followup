@@ -2,14 +2,20 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { FollowUpQueue, renderEditorLine } from "./followups.js";
 
-test("renders panel input in bright white", () => {
+test("renders panel input with a blinking block cursor", () => {
   const rendered = renderEditorLine("change me");
 
-  assert.equal(rendered, "  \x1b[97mchange me▌\x1b[0m");
+  assert.equal(
+    rendered,
+    "  \x1b[97mchange me\x1b[5m█\x1b[25m\x1b[0m",
+  );
 });
 
 test("strips terminal controls from rendered input", () => {
-  assert.equal(renderEditorLine("safe\x1b[31mred"), "  \x1b[97msafe[31mred▌\x1b[0m");
+  assert.equal(
+    renderEditorLine("safe\x1b[31mred"),
+    "  \x1b[97msafe[31mred\x1b[5m█\x1b[25m\x1b[0m",
+  );
 });
 
 test("adds trimmed follow-ups in order", () => {

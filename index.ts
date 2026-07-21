@@ -1,5 +1,6 @@
 import { createInterface } from "node:readline";
 import { stderr, stdin, stdout } from "node:process";
+import { readClipboardText } from "./clipboard.js";
 import { FollowUpQueue, renderEditorLine } from "./followups.js";
 
 type Frame = { type: string; id?: string; [key: string]: unknown };
@@ -251,6 +252,15 @@ function handleEditorKey(key: string, text: string): void {
     }
     case "rune":
       editor += text;
+      break;
+    case "unknown":
+      // Current zot releases do not expose a distinct panel paste key or
+      // include bracketed-paste text, so paste gestures arrive as unknown.
+      readClipboardText((error, clipboardText) => {
+        if (error || !clipboardText || !panelOpen || mode === "browse") return;
+        editor += clipboardText;
+        renderPanel();
+      });
       break;
   }
   clampCursor();
