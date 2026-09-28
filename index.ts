@@ -1,7 +1,7 @@
 import { createInterface } from "node:readline";
 import { stderr, stdin, stdout } from "node:process";
 import { readClipboardText } from "./clipboard.js";
-import { FollowUpQueue, renderEditorLine } from "./followups.js";
+import { FollowUpQueue, renderEditorLines, wrapPanelText } from "./followups.js";
 
 type Frame = { type: string; id?: string; [key: string]: unknown };
 type PanelMode = "browse" | "add" | "edit";
@@ -57,7 +57,7 @@ function panelLines(): string[] {
     return [
       `  ${mode === "add" ? "Add follow-up" : "Edit follow-up"}`,
       "",
-      renderEditorLine(editor),
+      ...renderEditorLines(editor),
       "",
       "  Enter saves, Esc cancels",
     ];
@@ -65,23 +65,27 @@ function panelLines(): string[] {
 
   const lines: string[] = [];
   if (activeFollowUp) {
-    lines.push(`  Working on: ${activeFollowUp}`, "");
+    lines.push("  Working on:", ...wrapPanelText(activeFollowUp, 46).map((line) => `  ${line}`), "");
   }
   if (queue.list().length === 0) {
     lines.push("  No pending follow-ups.", "", "  Press a to add one.");
     return lines;
   }
   for (const [index, item] of queue.list().entries()) {
-    lines.push(`${index === cursor ? ">" : " "} ${index + 1}. ${item.text}`);
+    const prefix = `${index === cursor ? ">" : " "} ${index + 1}. `;
+    const indent = " ".repeat(prefix.length);
+    const chunks = wrapPanelText(item.text, Math.max(1, 48 - prefix.length));
+    lines.push(`${prefix}${chunks[0]}`, ...chunks.slice(1).map((chunk) => `${indent}${chunk}`));
   }
+  lines.push("", "  ↑↓ select  ←→ reorder", "  Enter run when idle, Esc close");
   return lines;
 }
 
 function panelFooter(): string {
   if (mode !== "browse") {
-    return "type text - enter save - esc cancel - backspace delete";
+    return "Enter save  Esc cancel  ⌫ delete";
   }
-  return "up/down select - a add - e edit - d delete - c clear - left/right reorder - enter run when idle - esc close";
+  return "a add  e edit  d delete  c clear";
 }
 
 function renderPanel(): void {

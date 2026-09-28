@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { FollowUpQueue, renderEditorLine } from "./followups.js";
+import { FollowUpQueue, renderEditorLine, renderEditorLines, wrapPanelText } from "./followups.js";
 
 test("renders panel input with a blinking block cursor", () => {
   const rendered = renderEditorLine("change me");
@@ -16,6 +16,19 @@ test("strips terminal controls from rendered input", () => {
     renderEditorLine("safe\x1b[31mred"),
     "  \x1b[97msafe[31mred\x1b[5m█\x1b[25m\x1b[0m",
   );
+});
+
+test("wraps panel text without losing long words or newlines", () => {
+  assert.deepEqual(wrapPanelText("abcdefghij\nnext", 4), ["abcd", "efgh", "ij", "next"]);
+  assert.deepEqual(wrapPanelText("one\n\ntwo", 4), ["one", "", "two"]);
+});
+
+test("wraps editor input with a cursor only on the last line", () => {
+  const input = "a".repeat(50);
+  assert.deepEqual(renderEditorLines(input), [
+    `  ${"a".repeat(45)}`,
+    `  \x1b[97maaaaa\x1b[5m█\x1b[25m\x1b[0m`,
+  ]);
 });
 
 test("adds trimmed follow-ups in order", () => {
