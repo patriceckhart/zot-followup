@@ -1,7 +1,7 @@
 import { createInterface } from "node:readline";
 import { stderr, stdin, stdout } from "node:process";
 import { readClipboardText } from "./clipboard.js";
-import { FollowUpQueue, renderEditorLines, wrapPanelText } from "./followups.js";
+import { FollowUpQueue, renderEditorLines, splitPanelText } from "./followups.js";
 
 type Frame = { type: string; id?: string; [key: string]: unknown };
 type PanelMode = "browse" | "add" | "edit";
@@ -65,7 +65,7 @@ function panelLines(): string[] {
 
   const lines: string[] = [];
   if (activeFollowUp) {
-    lines.push("  Working on:", ...wrapPanelText(activeFollowUp, 46).map((line) => `  ${line}`), "");
+    lines.push("  Working on:", ...splitPanelText(activeFollowUp).map((line) => `  ${line}`), "");
   }
   if (queue.list().length === 0) {
     lines.push("  No pending follow-ups.", "", "  Press a to add one.");
@@ -74,7 +74,7 @@ function panelLines(): string[] {
   for (const [index, item] of queue.list().entries()) {
     const prefix = `${index === cursor ? ">" : " "} ${index + 1}. `;
     const indent = " ".repeat(prefix.length);
-    const chunks = wrapPanelText(item.text, Math.max(1, 48 - prefix.length));
+    const chunks = splitPanelText(item.text);
     lines.push(`${prefix}${chunks[0]}`, ...chunks.slice(1).map((chunk) => `${indent}${chunk}`));
   }
   lines.push("", "  ↑↓ select  ←→ reorder", "  Enter run when idle, Esc close");

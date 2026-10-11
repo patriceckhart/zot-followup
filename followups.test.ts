@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { FollowUpQueue, renderEditorLine, renderEditorLines, wrapPanelText } from "./followups.js";
+import { FollowUpQueue, renderEditorLine, renderEditorLines, splitPanelText } from "./followups.js";
 
 test("renders panel input with a blinking block cursor", () => {
   const rendered = renderEditorLine("change me");
@@ -18,16 +18,31 @@ test("strips terminal controls from rendered input", () => {
   );
 });
 
-test("wraps panel text without losing long words or newlines", () => {
-  assert.deepEqual(wrapPanelText("abcdefghij\nnext", 4), ["abcd", "efgh", "ij", "next"]);
-  assert.deepEqual(wrapPanelText("one\n\ntwo", 4), ["one", "", "two"]);
+test("leaves panel wrapping to the host and preserves explicit newlines", () => {
+  const input = "long follow-up text ".repeat(10);
+  assert.deepEqual(splitPanelText(input), [input]);
+  assert.deepEqual(splitPanelText("one\r\n\r\ntwo\rthree\n"), ["one", "", "two", "three", ""]);
 });
 
-test("wraps editor input with a cursor only on the last line", () => {
-  const input = "a".repeat(50);
-  assert.deepEqual(renderEditorLines(input), [
-    `  ${"a".repeat(45)}`,
-    `  \x1b[97maaaaa\x1b[5m█\x1b[25m\x1b[0m`,
+test("leaves long editor input on one logical line", () => {
+  const input = "a".repeat(100);
+  assert.deepEqual(renderEditorLines(input), [renderEditorLine(input)]);
+});
+
+test("preserves editor newlines with a cursor only on the last line", () => {
+  assert.deepEqual(renderEditorLines("one\r\n\r\ntwo\rthree\n"), [
+    "  \x1b[97mone\x1b[0m",
+    "  \x1b[97m\x1b[0m",
+    "  \x1b[97mtwo\x1b[0m",
+    "  \x1b[97mthree\x1b[0m",
+    renderEditorLine(""),
+  ]);
+});
+
+test("strips terminal controls from every editor line", () => {
+  assert.deepEqual(renderEditorLines("safe\x1b[31mred\nlast\tline"), [
+    "  \x1b[97msafe[31mred\x1b[0m",
+    renderEditorLine("lastline"),
   ]);
 });
 

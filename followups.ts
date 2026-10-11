@@ -3,19 +3,9 @@ export interface FollowUp {
   text: string;
 }
 
-export function wrapPanelText(text: string, width = 48): string[] {
-  const lines: string[] = [];
-  for (const line of text.split(/\r\n|\r|\n/)) {
-    const characters = Array.from(line);
-    if (characters.length === 0) {
-      lines.push("");
-      continue;
-    }
-    for (let start = 0; start < characters.length; start += width) {
-      lines.push(characters.slice(start, start + width).join(""));
-    }
-  }
-  return lines;
+export function splitPanelText(text: string): string[] {
+  // The host wraps logical lines to the actual terminal width.
+  return text.split(/\r\n|\r|\n/);
 }
 
 export function renderEditorLine(text: string): string {
@@ -24,10 +14,11 @@ export function renderEditorLine(text: string): string {
 }
 
 export function renderEditorLines(text: string): string[] {
-  const safeText = text.replace(/[\u0000-\u001f\u007f]/g, "");
-  const chunks = wrapPanelText(safeText, 45);
+  const chunks = splitPanelText(text).map((line) =>
+    line.replace(/[\u0000-\u001f\u007f]/g, ""),
+  );
   return [
-    ...chunks.slice(0, -1).map((chunk) => `  ${chunk}`),
+    ...chunks.slice(0, -1).map((chunk) => `  \x1b[97m${chunk}\x1b[0m`),
     renderEditorLine(chunks[chunks.length - 1]),
   ];
 }

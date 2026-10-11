@@ -8,7 +8,7 @@ The extension is TypeScript executed by `npx`. It has no build step, package man
 
 ## Requirements
 
-- zot with extension panel support
+- zot with extension panel support and host-side line wrapping
 - Node.js 18 or newer, including `npx`
 - Network access on the first launch if `tsx` is not already in the npm cache
 
@@ -40,6 +40,8 @@ In the panel:
 - Enter submits the selected item when the agent is idle.
 - Esc closes or cancels.
 - Your terminal's paste shortcut inserts clipboard text while adding or editing.
+
+Panel text wraps to the terminal width rather than a fixed character count. Pasted line breaks are preserved while editing and browsing the queue.
 
 Clipboard paste uses `pbpaste` on macOS, PowerShell on Windows, and `wl-paste`, `xclip`, or `xsel` on Linux. Current zot releases report panel paste gestures as an `unknown` key without including the pasted text, so the extension reads the system clipboard when it receives that key while its input is active.
 
